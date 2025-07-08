@@ -1,15 +1,19 @@
-import {createClient, commandOptions} from 'redis';
-const subscirber = createClient();
-subscirber.connect();
-
+import {createClient} from 'redis';
+import { downloadS3Folder } from './aws';
+import { buildProject } from './utils';
+const subscriber = createClient();
+subscriber.connect();
 
 async function main() {
     while(1){
-        const res = await subscirber.brPop(
-            commandOptions({isolate:  true}),
+        const response = await subscriber.brPop(
             'build-queue',
+            0
         );
-        console.log(res);
-        
+        if(response && response.element ){await downloadS3Folder(`output/${response.element}`)
+        await buildProject(response.element);
+        }
     }
 }
+
+main();
