@@ -6,9 +6,9 @@ COPY package*.json ./
 RUN npm install
 COPY tsconfig*.json ./
 COPY src ./src
-RUN npx tsc
+RUN NODE_OPTIONS="--max-old-space-size=1024" npx tsc
 
-
+# Production stage
 FROM node:18-alpine
 WORKDIR /app
 RUN apk add --no-cache git
