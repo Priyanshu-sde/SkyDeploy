@@ -25,13 +25,23 @@ app.get("/{*path}", async (req: Request<{ path?: string }>, res) => {
     const id = host.split(".")[0];
     const filePath = req.params.path ? `/${req.params.path}` : "";
 
-    const contents =  await s3.getObject({
-        Bucket : "skydeploy",
-        Key : `build/${id}${filePath}`
-    }).promise();
-    const type = filePath.endsWith("html") ? "text/html" : filePath.endsWith("css") ? "text/css" : "application/javascript"
-    res.set("Content-Type",type);
-     res.send(contents.Body);
+    try {
+        const contents = await s3.getObject({
+            Bucket : "skydeploy",
+            Key : `build/${id}/${filePath}`
+        }).promise();
+        
+        const type = filePath.endsWith("html") ? "text/html" : 
+                    filePath.endsWith("css") ? "text/css" : 
+                    filePath.endsWith("js") ? "application/javascript" :
+                    "application/octet-stream";
+        
+        res.set("Content-Type", type);
+        res.send(contents.Body);
+    } catch (error) {
+        console.error(`Error fetching ${id}${filePath}:`, error);
+        res.status(404).send("Build not found");
+    }
 })  
 
 app.listen(3002);
