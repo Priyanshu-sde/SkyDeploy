@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
-const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = "http://api-skydeploy.priyanshu.online";
 
 function App() {
   const [repoUrl, setRepoUrl] = useState("");
@@ -75,11 +73,11 @@ function App() {
                 <p>
                   <b>Deployed URL:</b>{" "}
                   <a
-                    href={`http://${deployId}.skydeploy.priyanshu.online:3001/index.html`}
+                    href={`http://${deployId}.skydeploy.priyanshu.online`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    http://{deployId}.dev.100xdevs.com:3001/index.html
+                    http://{deployId}.skydeploy.priyanshu.online
                   </a>
                 </p>
               </div>
