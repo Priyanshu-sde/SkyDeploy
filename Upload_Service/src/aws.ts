@@ -4,9 +4,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const s3 = new S3({
-    accessKeyId: process.env.Access_Key_ID,
-    secretAccessKey: process.env.Secret_Access_Key,
-    endpoint: process.env.Cloud_Url
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
+    endpoint: process.env.ENDPOINT,
+    region : "auto",
+    signatureVersion : "v4"
 })
 
 export const uploadFile = async(fileName: string , localFilePath : string) => {
