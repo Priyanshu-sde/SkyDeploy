@@ -7,12 +7,12 @@ import { getAllFiles } from "./file";
 import { uploadFile } from "./aws";
 import { createClient } from "redis";
 const publisher = createClient();
+const subscriber = createClient();
 
-async function redis() {
-  await publisher.connect();
-}
 
-redis();
+publisher.connect();
+subscriber.connect();
+
 
 const app = express();
 app.use(cors());
@@ -30,13 +30,24 @@ app.post("/deploy", async (req, res) => {
     )
   );
   console.log("File Uploaded");
-  
+    
   
   await publisher.lPush("build-queue", id);
+
+  await publisher.hSet("status",id,"Uploaded");
 
   res.json({
     id: id,
   });
 });
+
+
+app.get("/status",async (req,res) => {
+  const id = req.query.id;
+  const response = await subscriber.hGet("status",id as string);
+  res.json({
+    status : response
+  })
+})
 
 app.listen(3000);

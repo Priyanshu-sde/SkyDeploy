@@ -15,7 +15,6 @@ async function main() {
       await buildProject(response.element);
       copyFinalDist(response.element);
       publisher.hSet("status", response.element, "deployed");
-
     }
   }
 }

@@ -21,12 +21,9 @@ const file_1 = require("./file");
 const aws_1 = require("./aws");
 const redis_1 = require("redis");
 const publisher = (0, redis_1.createClient)();
-function redis() {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield publisher.connect();
-    });
-}
-redis();
+const subscriber = (0, redis_1.createClient)();
+publisher.connect();
+subscriber.connect();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
@@ -38,8 +35,16 @@ app.post("/deploy", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     yield Promise.all(files.map((file) => (0, aws_1.uploadFile)(file.slice(__dirname.length + 1), file)));
     console.log("File Uploaded");
     yield publisher.lPush("build-queue", id);
+    yield publisher.hSet("status", id, "Uploaded");
     res.json({
         id: id,
+    });
+}));
+app.get("/status", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.query.id;
+    const response = yield subscriber.hGet("status", id);
+    res.json({
+        status: response
     });
 }));
 app.listen(3000);
