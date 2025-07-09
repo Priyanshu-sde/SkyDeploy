@@ -27,6 +27,7 @@ app.get("/{*path}", async (req: Request<{ path?: string }>, res) => {
     
     console.log("ID:", id);
     console.log("FilePath:", filePath);
+    console.log("Full URL:", req.url);
     
     if (filePath === "" || filePath === "/") {
         filePath = "/index.html";
