@@ -2,6 +2,7 @@ import express, { Request } from "express";
 import { S3 } from "aws-sdk";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
 dotenv.config();
 
 const app = express();
@@ -19,7 +20,38 @@ const s3 = new S3({
     signatureVersion : "v4"
 })
 
-// Handle all routes
+function getMimeType(filePath: string): string {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes: { [key: string]: string } = {
+        '.html': 'text/html',
+        '.htm': 'text/html',
+        '.css': 'text/css',
+        '.js': 'application/javascript',
+        '.json': 'application/json',
+        '.ico': 'image/x-icon',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
+        '.woff': 'font/woff',
+        '.woff2': 'font/woff2',
+        '.ttf': 'font/ttf',
+        '.eot': 'application/vnd.ms-fontobject',
+        '.otf': 'font/otf',
+        '.pdf': 'application/pdf',
+        '.txt': 'text/plain',
+        '.xml': 'application/xml',
+        '.webp': 'image/webp',
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm',
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav'
+    };
+    
+    return mimeTypes[ext] || 'application/octet-stream';
+}
+
 app.use(async (req: Request, res) => {
     const host = req.hostname;
     console.log("Host:", host);
@@ -43,19 +75,33 @@ app.use(async (req: Request, res) => {
             Key : s3Key
         }).promise();
         
-        const type = filePath.endsWith("html") ? "text/html" : 
-                    filePath.endsWith("css") ? "text/css" : 
-                    filePath.endsWith("js") ? "application/javascript" :
-                    filePath.endsWith("json") ? "application/json" :
-                    filePath.endsWith("ico") ? "image/x-icon" :
-                    filePath.endsWith("png") ? "image/png" :
-                    filePath.endsWith("svg") ? "image/svg+xml" :
-                    "application/octet-stream";
+        const mimeType = getMimeType(filePath);
+        res.set("Content-Type", mimeType);
         
-        res.set("Content-Type", type);
+        if (mimeType.startsWith('image/') || mimeType.startsWith('font/') || mimeType.includes('css') || mimeType.includes('javascript')) {
+            res.set('Cache-Control', 'public, max-age=31536000'); // 1 year cache for static assets
+        }
+        
         res.send(contents.Body);
     } catch (error) {
         console.error(`Error fetching ${s3Key}:`, error);
+        
+        if (filePath !== "/index.html") {
+            try {
+                const fallbackKey = `build/${id}/index.html`;
+                const fallbackContents = await s3.getObject({
+                    Bucket: "skydeploy",
+                    Key: fallbackKey
+                }).promise();
+                
+                res.set("Content-Type", "text/html");
+                res.send(fallbackContents.Body);
+                return;
+            } catch (fallbackError) {
+                console.error(`Fallback to index.html also failed:`, fallbackError);
+            }
+        }
+        
         res.status(404).send("Build not found");
     }
 })  

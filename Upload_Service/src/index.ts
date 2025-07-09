@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import simpleGit from "simple-git";
 import path from "path";
+import fs from "fs";
 import { generate } from "./utils";
 import { getAllFiles } from "./file";
 import { uploadFile } from "./aws";
@@ -26,10 +27,35 @@ app.use(cors({
 
 app.use(express.json());
 
+function detectProjectType(projectPath: string): string {
+    const packageJsonPath = path.join(projectPath, 'package.json');
+    const indexHtmlPath = path.join(projectPath, 'index.html');
+    
+    if (!fs.existsSync(packageJsonPath)) {
+        return 'static';
+    }
+    
+    if (fs.existsSync(indexHtmlPath)) {
+        try {
+            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+            if (!packageJson.scripts || !packageJson.scripts.build) {
+                return 'static';
+            }
+        } catch (error) {
+            return 'static';
+        }
+    }
+    
+    return 'nodejs';
+}
+
 app.post("/deploy", async (req, res) => {
   const repoUrl = req.body.repoUrl;
   const id = generate();
   await simpleGit().clone(repoUrl, path.join(__dirname, `output/${id}`));
+
+  const projectType = detectProjectType(path.join(__dirname, `output/${id}`));
+  console.log(`Project ${id} detected as: ${projectType}`);
 
   const files = getAllFiles(path.join(__dirname, `output/${id}`));
   await Promise.all(
@@ -45,7 +71,8 @@ app.post("/deploy", async (req, res) => {
   await publisher.hSet("status",id,"Uploaded");
 
   res.json({
-    id: id
+    id: id,
+    projectType: projectType
   });
 });
 

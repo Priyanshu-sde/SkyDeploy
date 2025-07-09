@@ -2,6 +2,7 @@ import { S3 } from "aws-sdk";
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import { isStaticProject } from './utils';
 dotenv.config();
 
 
@@ -55,11 +56,21 @@ export async function downloadS3Folder (prefix : string){
 }
 
 export function copyFinalDist(id: String){
-    const folderPath = path.join(__dirname,`output/${id}/build`);
-    const allFiles = getAllFiles(folderPath);
-    allFiles.forEach(file => {
-        uploadFile(`build/${id}/` + file.slice(folderPath.length+1), file);
-    })    
+    const projectPath = path.join(__dirname,`output/${id}`);
+    
+    if (isStaticProject(id as string)) {
+        console.log(`Copying static project ${id} directly`);
+        const allFiles = getAllFiles(projectPath);
+        allFiles.forEach(file => {
+            uploadFile(`build/${id}/` + file.slice(projectPath.length + 1), file);
+        });
+    } else {
+        const folderPath = path.join(__dirname,`output/${id}/build`);
+        const allFiles = getAllFiles(folderPath);
+        allFiles.forEach(file => {
+            uploadFile(`build/${id}/` + file.slice(folderPath.length + 1), file);
+        });
+    }
 }
 
 export function getAllFiles (folderPath : string) {
