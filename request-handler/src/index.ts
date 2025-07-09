@@ -1,10 +1,15 @@
 import express, { Request } from "express";
 import { S3 } from "aws-sdk";
 import dotenv from "dotenv";
+import cors from "cors";
 dotenv.config();
 
-
 const app = express();
+
+app.use(cors({
+  origin: true, 
+  credentials: true
+}));
 
 const s3 = new S3({
     accessKeyId: process.env.ACCESS_KEY_ID,
@@ -13,7 +18,6 @@ const s3 = new S3({
     region : "auto",
     signatureVersion : "v4"
 })
-
 
 app.get("/{*path}", async (req: Request<{ path?: string }>, res) => {
     const host = req.hostname;
@@ -29,6 +33,5 @@ app.get("/{*path}", async (req: Request<{ path?: string }>, res) => {
     res.set("Content-Type",type);
      res.send(contents.Body);
 })  
-
 
 app.listen(3002);
