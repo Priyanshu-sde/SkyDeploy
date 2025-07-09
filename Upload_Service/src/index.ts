@@ -50,4 +50,16 @@ app.get("/status",async (req,res) => {
   })
 })
 
+const logsMap : Record<string,string[]> = {};
+
+function logForId(id : string, line: string){
+  if(!logsMap[id]) logsMap[id] = [];
+  logsMap[id].push(line);
+}
+
+app.get("/logs", (req,res) => {
+  const id = req.query.id as string;
+  res.json({logs : logsMap[id] || []})
+})
+
 app.listen(3000);
