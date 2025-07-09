@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import './App.css'
 
-const BACKEND_URL = "http://api-skydeploy.priyanshu.online";
+const BACKEND_URL = "https://api-skydeploy.priyanshu.online";
 
 function App() {
   const [repoUrl, setRepoUrl] = useState("");
