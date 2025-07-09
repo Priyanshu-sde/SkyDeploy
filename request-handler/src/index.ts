@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request } from "express";
 import { S3 } from "aws-sdk";
 import dotenv from "dotenv";
 dotenv.config();
@@ -15,15 +15,15 @@ const s3 = new S3({
 })
 
 
-app.get("/*",async (req,res) => {
+app.get("/{*path}", async (req: Request<{ path?: string }>, res) => {
     const host = req.hostname;
     console.log(host);
     const id = host.split(".")[0];
-    const filePath = req.path;
+    const filePath = req.params.path ? `/${req.params.path}` : "";
 
     const contents =  await s3.getObject({
-        Bucket : "vercel",
-        Key : `dist/${id}${filePath}`
+        Bucket : "skydeploy",
+        Key : `build/${id}${filePath}`
     }).promise();
     const type = filePath.endsWith("html") ? "text/html" : filePath.endsWith("css") ? "text/css" : "application/javascript"
     res.set("Content-Type",type);
@@ -31,4 +31,4 @@ app.get("/*",async (req,res) => {
 })  
 
 
-app.listen(3001);
+app.listen(3002);

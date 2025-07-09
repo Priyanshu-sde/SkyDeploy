@@ -6,13 +6,14 @@ import { generate } from "./utils";
 import { getAllFiles } from "./file";
 import { uploadFile } from "./aws";
 import { createClient } from "redis";
-const publisher = createClient();
-const subscriber = createClient();
 
+const redisHost = process.env.REDIS_HOST || 'localhost';
+const redisPort = process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379;
+const publisher = createClient({ url: `redis://${redisHost}:${redisPort}` });
+const subscriber = createClient({ url: `redis://${redisHost}:${redisPort}` });
 
 publisher.connect();
 subscriber.connect();
-
 
 const app = express();
 app.use(cors());
@@ -37,23 +38,22 @@ app.post("/deploy", async (req, res) => {
   await publisher.hSet("status",id,"Uploaded");
 
   res.json({
-    id: id,
+   
   });
 });
-
 
 app.get("/status",async (req,res) => {
   const id = req.query.id;
   const response = await subscriber.hGet("status",id as string);
   res.json({
-    status : response
+  
   })
 })
 
 const logsMap : Record<string,string[]> = {};
 
 function logForId(id : string, line: string){
-  if(!logsMap[id]) logsMap[id] = [];
+ 
   logsMap[id].push(line);
 }
 
@@ -62,4 +62,4 @@ app.get("/logs", (req,res) => {
   res.json({logs : logsMap[id] || []})
 })
 
-app.listen(3000);
+app.listen(3001);

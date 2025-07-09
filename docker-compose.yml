@@ -1,0 +1,39 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  upload-service:
+    build: ./Upload_Service
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  request-handler:
+    build: ./request-handler
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  deploy-service:
+    build: ./Deploy-service
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  
