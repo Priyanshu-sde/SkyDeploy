@@ -21,14 +21,32 @@ const s3 = new S3({
 
 app.get("/{*path}", async (req: Request<{ path?: string }>, res) => {
     const host = req.hostname;
-    console.log(host);
+    console.log("Host:", host);
     const id = host.split(".")[0];
     const filePath = req.params.path ? `/${req.params.path}` : "";
+    
+    console.log("ID:", id);
+    console.log("FilePath:", filePath);
+    
+    // Try to list files in the build directory
+    try {
+        const listResult = await s3.listObjectsV2({
+            Bucket: "skydeploy",
+            Prefix: `build/${id}/`
+        }).promise();
+        
+        console.log("Files in S3:", listResult.Contents?.map(obj => obj.Key));
+    } catch (listError) {
+        console.log("Error listing files:", listError);
+    }
 
     try {
+        const s3Key = `build/${id}${filePath}`;
+        console.log("Requesting S3 key:", s3Key);
+        
         const contents = await s3.getObject({
             Bucket : "skydeploy",
-            Key : `build/${id}/${filePath}`
+            Key : s3Key
         }).promise();
         
         const type = filePath.endsWith("html") ? "text/html" : 
