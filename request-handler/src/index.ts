@@ -19,17 +19,18 @@ const s3 = new S3({
     signatureVersion : "v4"
 })
 
-app.get("/{*path}", async (req: Request<{ path?: string }>, res) => {
+// Handle all routes
+app.use(async (req: Request, res) => {
     const host = req.hostname;
     console.log("Host:", host);
     const id = host.split(".")[0];
-    let filePath = req.params.path ? `/${req.params.path}` : "";
+    let filePath = req.path;
     
     console.log("ID:", id);
     console.log("FilePath:", filePath);
     console.log("Full URL:", req.url);
     
-    if (filePath === "" || filePath === "/") {
+    if (filePath === "/" || filePath === "") {
         filePath = "/index.html";
     }
     
