@@ -5,7 +5,7 @@ COPY package*.json ./
 RUN npm install
 COPY tsconfig*.json ./
 COPY src ./src
-RUN NODE_OPTIONS="--max-old-space-size=512" npx tsc
+RUN NODE_OPTIONS="--max-old-space-size=1024" npx tsc
 
 
 FROM node:18-alpine
