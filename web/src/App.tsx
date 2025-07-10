@@ -20,7 +20,7 @@ import {
   Eye
 } from 'lucide-react';
 
-const API_BASE = 'http://api-skydeploy.priyanshu.online';
+const API_BASE = 'https://api-skydeploy.priyanshu.online';
 
 const statusColors = {
   'Uploaded': 'bg-blue-100 text-blue-800',
