@@ -19,7 +19,7 @@ subscriber.connect();
 const app = express();
 
 app.use(cors({
-  origin: ['https://skydeploy.priyanshu.online', 'http://localhost:5173'],
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
