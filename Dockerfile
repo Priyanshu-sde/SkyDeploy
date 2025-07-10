@@ -4,8 +4,10 @@ RUN apt-get update && \
     apt-get install -y redis-server supervisor && \
     rm -rf /var/lib/apt/lists/*
 
+RUN npm install -g ts-node typescript
 
 WORKDIR /app
+
 
 COPY Deploy-service /app/Deploy-service
 COPY request-handler /app/request-handler
