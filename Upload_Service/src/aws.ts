@@ -1,9 +1,9 @@
-import { S3 } from "aws-sdk";
+import AWS from "aws-sdk";
 import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const s3 = new S3({
+const s3 = new AWS.S3({
     accessKeyId: process.env.ACCESS_KEY_ID,
     secretAccessKey: process.env.SECRET_ACCESS_KEY,
     endpoint: process.env.ENDPOINT,
