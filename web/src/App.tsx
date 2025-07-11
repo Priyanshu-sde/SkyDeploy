@@ -49,13 +49,27 @@ type Deployment = {
 
 export default function App() {
   const [repoUrl, setRepoUrl] = useState('');
-  const [deployments, setDeployments] = useState<Deployment[]>([]);
+  const [deployments, setDeployments] = useState<Deployment[]>(() => {
+    try {
+      const stored = localStorage.getItem('skydeploy_deployments');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedDeployment, setSelectedDeployment] = useState<Deployment | null>(null);
   const [logs, setLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Save deployments to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('skydeploy_deployments', JSON.stringify(deployments));
+    } catch {}
+  }, [deployments]);
 
   const deployProject = async () => {
     if (!repoUrl.trim()) {
