@@ -41,6 +41,20 @@ module.exports = {
       log_file: '/var/log/pm2/upload-service.log',
       out_file: '/var/log/pm2/upload-service-out.log',
       error_file: '/var/log/pm2/upload-service-error.log'
+    },
+    {
+      name: 'ci-cd-handler',
+      cwd: './ci-cd-handler',
+      script: 'node',
+      args: 'dist/index.js',
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '150M',
+      env_file: '../.env',
+      log_file: '/var/log/pm2/ci-cd-handler.log',
+      out_file: '/var/log/pm2/ci-cd-handler-out.log',
+      error_file: '/var/log/pm2/ci-cd-handler-error.log'
     }
   ]
 };
