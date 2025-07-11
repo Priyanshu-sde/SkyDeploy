@@ -3,7 +3,7 @@ import simpleGit from "simple-git";
 import path from "path";
 import fs from "fs";
 import { generate } from "./utils";
-import { getAllFiles } from "./file";
+import { getAllFiles, cleanupClonedRepo } from "./file";
 import { uploadFile } from "./aws";
 import { createClient } from "redis";
 import axios from "axios";
@@ -68,6 +68,9 @@ async function getLatestCommit(repoUrl: string): Promise<string | null> {
   return (data as any).sha;
 }
 
+
+
+
 app.post("/deploy", async (req, res) => {
   await publisher.hSet("test_hash", "foo", "bar");
   const val = await subscriber.hGet("test_hash", "foo");
@@ -101,6 +104,9 @@ app.post("/deploy", async (req, res) => {
           uploadFile(file.slice(__dirname.length + 1), file)
         )
       );
+      await cleanupClonedRepo(existingId);
+      
+      logForId(existingId, ` Files uploaded to S3 successfully`);
       await publisher.lPush("build-queue", existingId);
       await publisher.hSet("status", existingId, "Uploaded");
       await publisher.hSet("project_type", existingId, projectType);
@@ -124,6 +130,10 @@ app.post("/deploy", async (req, res) => {
       uploadFile(file.slice(__dirname.length + 1), file)
     )
   );
+  
+  await cleanupClonedRepo(id);
+  
+  logForId(id, ` Files uploaded to S3 successfully`);
   await publisher.hSet("repo_map", repoUrl, id);
   await publisher.hSet("project_type", id, projectType);
   const latestCommit = await getLatestCommit(repoUrl);
@@ -150,8 +160,26 @@ const logsMap : Record<string,string[]> = {};
 
 function logForId(id : string, line: string){
   if(!logsMap[id]) logsMap[id] = [];
-  logsMap[id].push(line);
+  const timestamp = new Date().toISOString();
+  logsMap[id].push(`[${timestamp}] ${line}`);
 }
+
+async function listenForLogs() {
+  while (true) {
+    try {
+      const logData = await subscriber.blPop("logs-queue", 0);
+      if (logData && logData.element) {
+        const { id, message } = JSON.parse(logData.element);
+        logForId(id, message);
+      }
+    } catch (error) {
+      console.error("Error listening for logs:", error);
+      await new Promise(resolve => setTimeout(resolve, 1000)); 
+    }
+  }
+}
+
+listenForLogs().catch(console.error);
 
 app.get("/logs", (req,res) => {
   const id = req.query.id as string;

@@ -1,6 +1,7 @@
 import {exec, spawn} from "child_process";
 import path from "path";
 import fs from "fs";
+import { sendLog } from './index';
 
 export function isStaticProject(id: string): boolean {
     const projectPath = path.join(__dirname, `output/${id}`);
@@ -40,15 +41,41 @@ export function buildProject(id: string){
         
         const child = exec(`cd ${path.join(__dirname,`output/${id}`)} && npm install && npm run build`)
         console.log(child);
+        
         child.stdout?.on('data', function(data) {
-            console.log('stdout: ' + data);
+            const output = data.toString().trim();
+            if (output) {
+                console.log('stdout: ' + output);
+                output.split('\n').forEach((line: string) => {
+                    if (line.trim()) {
+                        sendLog(id, `[BUILD] ${line.trim()}`);
+                    }
+                });
+            }
         });
+        
         child.stderr?.on('data', function (data) {
-            console.log('stderr: ' + data);
+            const output = data.toString().trim();
+            if (output) {
+                console.log('stderr: ' + output);
+                output.split('\n').forEach((line: string) => {
+                    if (line.trim()) {
+                        sendLog(id, `[BUILD-ERROR] ${line.trim()}`);
+                    }
+                });
+            }
         });
 
         child.on('close', function(code) {
+            if (code === 0) {
+                console.log(`Build completed successfully for project ${id}`);
+                sendLog(id, `Build completed successfully for project ${id}`);
+            } else {
+                console.log(`Build failed for project ${id} with exit code ${code}`);
+                sendLog(id, `Build failed for project ${id} with exit code ${code}`);
+            }
             resolve("")
         })
     })
 }
+
