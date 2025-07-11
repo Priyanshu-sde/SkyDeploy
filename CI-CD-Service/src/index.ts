@@ -59,7 +59,7 @@ async function poll() {
     } catch (err) {
       console.error("Polling error:", err);
     }
-    await sleep(5 * 60 * 1000); 
+    await sleep(60000); 
   }
 }
 
