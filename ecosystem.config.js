@@ -43,8 +43,8 @@ module.exports = {
       error_file: '/var/log/pm2/upload-service-error.log'
     },
     {
-      name: 'ci-cd-handler',
-      cwd: './ci-cd-handler',
+      name: 'ci-cd-service',
+      cwd: './CI-CD-Service',
       script: 'node',
       args: 'dist/index.js',
       instances: 1,
@@ -52,9 +52,9 @@ module.exports = {
       watch: false,
       max_memory_restart: '150M',
       env_file: '../.env',
-      log_file: '/var/log/pm2/ci-cd-handler.log',
-      out_file: '/var/log/pm2/ci-cd-handler-out.log',
-      error_file: '/var/log/pm2/ci-cd-handler-error.log'
+      log_file: '/var/log/pm2/ci-cd-service.log',
+      out_file: '/var/log/pm2/ci-cd-service-out.log',
+      error_file: '/var/log/pm2/ci-cd-service-error.log'
     }
   ]
 };
