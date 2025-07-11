@@ -125,6 +125,7 @@ app.post("/deploy", async (req, res) => {
   await publisher.hSet("last_commit", repoUrl, latestCommit || "");
   await publisher.lPush("build-queue", id);
   await publisher.hSet("status", id, "Uploaded");
+  await publisher.hSet("repo_map", repoUrl, id);
   res.json({
     id: id,
     projectType: projectType,
