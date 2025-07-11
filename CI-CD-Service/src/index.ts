@@ -21,16 +21,18 @@ async function getLatestCommit(repoUrl: string): Promise<string | null> {
     const repo = match[2];
     const repoResp = await axios.get(`https://api.github.com/repos/${owner}/${repo}`);
     if (repoResp.status !== 200) return null;
-    const repoData = repoResp.data;
+    const repoData = repoResp.data as { default_branch?: string };
     const branch = repoData.default_branch;
+    if (!branch) return null;
     const resp = await axios.get(`https://api.github.com/repos/${owner}/${repo}/commits/${branch}`);
     if (resp.status !== 200) return null;
-    const data = resp.data;
+    const data = resp.data as { sha?: string };
+    if (!data || typeof data !== "object" || typeof data.sha !== "string") return null;
     return data.sha;
   }
   
   async function triggerDeploy(repoUrl: string) {
-    const response = await axios.post("http://upload-service:3001/deploy", { repoUrl });
+    const response = await axios.post("http://localhost:3001/deploy", { repoUrl });
     console.log("Deploy triggered:", response.data);
     return response.data;
   }
