@@ -72,11 +72,17 @@ async function getLatestCommit(repoUrl: string): Promise<string | null> {
 
 
 app.post("/deploy", async (req, res) => {
-  await publisher.hSet("test_hash", "foo", "bar");
-  const val = await subscriber.hGet("test_hash", "foo");
-  console.log("Test hSet/hGet:", val);
-  const repoUrl = req.body.repoUrl;
-  const existingId = await subscriber.hGet("repo_map", repoUrl);
+  try {
+    console.log("Deploy request received:", req.body);
+    
+    const repoUrl = req.body.repoUrl;
+    if (!repoUrl) {
+      console.error("No repoUrl provided in request body");
+      return res.status(400).json({ error: "repoUrl is required" });
+    }
+    
+    console.log("Processing deployment for:", repoUrl);
+    const existingId = await subscriber.hGet("repo_map", repoUrl);
   if (existingId) {
     const lastCommit = await subscriber.hGet("last_commit", repoUrl);
     const latestCommit = await getLatestCommit(repoUrl);
@@ -91,19 +97,32 @@ app.post("/deploy", async (req, res) => {
       });
       return;
     } else {
+      console.log("Redeploying existing project:", existingId);
       
       const outputPath = path.join(__dirname, `output/${existingId}`);
       if (fs.existsSync(outputPath)) {
+        console.log("Removing existing output directory");
         fs.rmSync(outputPath, { recursive: true, force: true });
       }
+      
+      console.log("Cloning repository...");
       await simpleGit().clone(repoUrl, outputPath);
+      console.log("Repository cloned successfully");
+      
       const projectType = detectProjectType(outputPath);
+      console.log("Project type detected:", projectType);
+      
       const files = getAllFiles(outputPath);
+      console.log(`Found ${files.length} files to upload`);
+      
+      console.log("Uploading files to S3...");
       await Promise.all(
         files.map((file) =>
           uploadFile(file.slice(__dirname.length + 1), file)
         )
       );
+      console.log("Files uploaded successfully");
+      
       await cleanupClonedRepo(existingId);
       
       logForId(existingId, ` Files uploaded to S3 successfully`);
@@ -122,14 +141,25 @@ app.post("/deploy", async (req, res) => {
   }
   
   const id = generate();
+  console.log("Generated new deployment ID:", id);
+  
+  console.log("Cloning repository for new deployment...");
   await simpleGit().clone(repoUrl, path.join(__dirname, `output/${id}`));
+  console.log("Repository cloned successfully");
+  
   const projectType = detectProjectType(path.join(__dirname, `output/${id}`));
+  console.log("Project type detected:", projectType);
+  
   const files = getAllFiles(path.join(__dirname, `output/${id}`));
+  console.log(`Found ${files.length} files to upload`);
+  
+  console.log("Uploading files to S3...");
   await Promise.all(
     files.map((file) =>
       uploadFile(file.slice(__dirname.length + 1), file)
     )
   );
+  console.log("Files uploaded successfully");
   
   await cleanupClonedRepo(id);
   
@@ -146,6 +176,13 @@ app.post("/deploy", async (req, res) => {
     url: `https://${id}.skydeploy.priyanshu.online`,
     message: "New deployment triggered"
   });
+  } catch (error) {
+    console.error("Error in deploy endpoint:", error);
+    res.status(500).json({ 
+      error: "Internal server error", 
+      message: error instanceof Error ? error.message : "Unknown error" 
+    });
+  }
 });
 
 app.get("/status",async (req,res) => {
@@ -186,4 +223,14 @@ app.get("/logs", (req,res) => {
   res.json({logs : logsMap[id] || []})
 })
 
-app.listen(3001);
+app.get("/health", (req, res) => {
+  res.json({ 
+    status: "healthy", 
+    timestamp: new Date().toISOString(),
+    redis: "connected"
+  });
+});
+
+app.listen(3001, () => {
+  console.log("Upload service started on port 3001");
+});

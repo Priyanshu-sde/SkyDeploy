@@ -12,12 +12,18 @@ const s3 = new AWS.S3({
 })
 
 export const uploadFile = async(fileName: string , localFilePath : string) => {
-    console.log("called");
-    const fileContent = fs.readFileSync(localFilePath);
-    const response = await s3.upload({
-        Body: fileContent,
-        Bucket: "skydeploy",
-        Key: fileName,         
-    }).promise();
-    console.log(response);
+    try {
+        console.log(`Uploading file: ${fileName}`);
+        const fileContent = fs.readFileSync(localFilePath);
+        const response = await s3.upload({
+            Body: fileContent,
+            Bucket: "skydeploy",
+            Key: fileName,         
+        }).promise();
+        console.log(`Successfully uploaded: ${fileName}`);
+        return response;
+    } catch (error) {
+        console.error(`Error uploading file ${fileName}:`, error);
+        throw error; 
+    }
 }
