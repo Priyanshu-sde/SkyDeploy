@@ -67,6 +67,9 @@ async function getLatestCommit(repoUrl: string): Promise<string | null> {
 }
 
 app.post("/deploy", async (req, res) => {
+  await publisher.hSet("test_hash", "foo", "bar");
+  const val = await subscriber.hGet("test_hash", "foo");
+  console.log("Test hSet/hGet:", val);
   const repoUrl = req.body.repoUrl;
   const existingId = await subscriber.hGet("repo_map", repoUrl);
   if (existingId) {
@@ -125,7 +128,6 @@ app.post("/deploy", async (req, res) => {
   await publisher.hSet("last_commit", repoUrl, latestCommit || "");
   await publisher.lPush("build-queue", id);
   await publisher.hSet("status", id, "Uploaded");
-  await publisher.hSet("repo_map", repoUrl, id);
   res.json({
     id: id,
     projectType: projectType,

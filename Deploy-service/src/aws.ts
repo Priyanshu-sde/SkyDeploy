@@ -65,7 +65,14 @@ export function copyFinalDist(id: String){
             uploadFile(`build/${id}/` + file.slice(projectPath.length + 1), file);
         });
     } else {
-        const folderPath = path.join(__dirname,`output/${id}/build`);
+        let folderPath = path.join(__dirname,`output/${id}/build`);
+        if (!fs.existsSync(folderPath)) {
+            folderPath = path.join(__dirname,`output/${id}/dist`);
+            if (!fs.existsSync(folderPath)) {
+                console.error(`Neither /build nor /dist exists for project ${id}`);
+                return;
+            }
+        }
         const allFiles = getAllFiles(folderPath);
         allFiles.forEach(file => {
             uploadFile(`build/${id}/` + file.slice(folderPath.length + 1), file);
