@@ -68,6 +68,11 @@ export default function App() {
       return;
     }
 
+    let sanitizedRepoUrl = repoUrl.trim();
+    if (!sanitizedRepoUrl.endsWith('.git')) {
+      sanitizedRepoUrl += '.git';
+    }
+
     setLoading(true);
     setError('');
 
@@ -77,7 +82,7 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ repoUrl }),
+        body: JSON.stringify({ repoUrl: sanitizedRepoUrl }),
       });
 
       if (!response.ok) {
@@ -89,7 +94,7 @@ export default function App() {
       const newDeployment = {
         id: data.id,
         projectType: data.projectType,
-        repoUrl,
+        repoUrl: sanitizedRepoUrl,
         status: 'pending',
         timestamp: new Date().toISOString(),
         url: `https://${data.id}.skydeploy.priyanshu.online`
@@ -198,6 +203,30 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           <div className="lg:col-span-1">
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Github className="h-5 w-5 mr-2" />
+                  Template Repo
+                </CardTitle>
+                <CardDescription>
+                  Use this template to get started quickly
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Input value="https://github.com/Priyanshu-sde/disco-test.git" readOnly />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyToClipboard('https://github.com/Priyanshu-sde/disco-test.git')}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -255,7 +284,31 @@ export default function App() {
               <CardContent>
                 <ScrollArea className="h-64">
                   {deployments.length === 0 ? (
-                    <p className="text-gray-500 text-center py-4">No deployments yet</p>
+                    <div className="text-gray-500 text-center py-4 space-y-2">
+                      <div>No deployments yet</div>
+                      <div className="space-y-1">
+                        <div>
+                          <a
+                            href="https://github.com/Priyanshu-sde/disco-test.git"
+                            className="text-blue-600 hover:underline break-all"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            https://github.com/Priyanshu-sde/disco-test.git
+                          </a>
+                        </div>
+                        <div>
+                          <a
+                            href="https://dflds.skydeploy.priyanshu.online"
+                            className="text-blue-600 hover:underline break-all"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            https://dflds.skydeploy.priyanshu.online
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       {deployments.map((deployment) => (
