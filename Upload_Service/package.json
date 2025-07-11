@@ -14,8 +14,6 @@
   "type": "commonjs",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.832.0",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
@@ -31,6 +29,9 @@
     "@types/mime": "^3.0.4",
     "@types/node": "^24.0.10",
     "@types/node-fetch": "^2.6.12",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "@types/axios": "^0.9.36",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3"
   }
 }

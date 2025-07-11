@@ -58,12 +58,14 @@ async function getLatestCommit(repoUrl: string): Promise<string | null> {
   const repo = match[2];
   const repoResp = await axios.get(`https://api.github.com/repos/${owner}/${repo}`);
   if (repoResp.status !== 200) return null;
-  const repoData = repoResp.data;
+  const repoData = repoResp.data as { default_branch?: string };
   const branch = repoData.default_branch;
+  if (!branch) return null;
   const resp = await axios.get(`https://api.github.com/repos/${owner}/${repo}/commits/${branch}`);
   if (resp.status !== 200) return null;
-  const data = resp.data;
-  return data.sha;
+  const data = resp.data as { sha?: string };
+  if (!data || typeof data !== "object" || typeof data.sha !== "string") return null;
+  return (data as any).sha;
 }
 
 app.post("/deploy", async (req, res) => {
