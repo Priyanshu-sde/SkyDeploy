@@ -4,6 +4,8 @@ import path from "path";
 import fs from "fs";
 import simpleGit from "simple-git";
 import axios from "axios";
+import dotenv from "dotenv";
+dotenv.config();
 
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379;
