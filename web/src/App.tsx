@@ -211,7 +211,7 @@ export default function App() {
             <Rocket className="h-8 w-8 text-blue-600 mr-2" />
             <h1 className="text-4xl font-bold text-gray-900">SkyDeploy</h1>
           </div>
-          <p className="text-gray-600 text-lg">Deploy your projects to the cloud in seconds</p>
+          <p className="text-gray-600 text-lg">Backend is under maintanace However previous generated site will still be live</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
