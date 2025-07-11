@@ -192,7 +192,7 @@ export default function App() {
             <Rocket className="h-8 w-8 text-blue-600 mr-2" />
             <h1 className="text-4xl font-bold text-gray-900">SkyDeploy</h1>
           </div>
-          <p className="text-red-600 text-lg">Backend Service is under upgrade, Deployments will be resumed after the upgrade</p>
+          <p className="text-gray-600 text-lg">Deploy your projects to the cloud in seconds</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
