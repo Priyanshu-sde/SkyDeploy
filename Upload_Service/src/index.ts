@@ -106,6 +106,13 @@ app.post("/deploy", async (req, res) => {
   await publisher.lPush("build-queue", id);
   await publisher.hSet("status", id, "Uploaded");
   await publisher.hSet("repo_map", repoUrl, id);
+  
+  const latestCommit = await getLatestCommit(repoUrl);
+  if (latestCommit) {
+    await publisher.hSet("last_commit", repoUrl, latestCommit);
+    logForId(id, ` Updated last commit hash: ${latestCommit}`);
+  }
+  
   res.json({
     id: id,
     projectType: projectType,
