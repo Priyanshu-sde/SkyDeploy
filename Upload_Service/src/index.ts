@@ -83,8 +83,8 @@ app.post("/deploy", async (req, res) => {
     
     console.log("Processing deployment for:", repoUrl);    
   
-  const id = generate();
-  console.log("Generated new deployment ID:", id);
+  const id = req.body.id || generate();
+  console.log("Using deployment ID:", id);
   
   await simpleGit().clone(repoUrl, path.join(__dirname, `output/${id}`));
   

@@ -1,8 +1,4 @@
 import { createClient } from "redis";
-import fetch from "node-fetch";
-import path from "path";
-import fs from "fs";
-import simpleGit from "simple-git";
 import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
@@ -51,18 +47,25 @@ async function getLatestCommit(repoUrl: string): Promise<string | null> {
       }
       return null;
     }
-  }
-  
-  async function triggerDeploy(repoUrl: string) {
-    const response = await axios.post("http://localhost:3001/deploy", { repoUrl });
+}
+
+async function triggerDeploy(repoUrl: string,id : string) {
+  try {
+    const response = await axios.post("http://localhost:3001/deploy", { repoUrl,id });
     console.log("Deploy triggered:", response.data);
     return response.data;
+  } catch (error: any) {
+    console.error("Error triggering deployment:", error.message);
+    throw error;
   }
-  
+}
 
 async function poll() {
   await publisher.connect();
   await subscriber.connect();
+  
+  console.log("CI/CD Service started - polling for repository changes...");
+  
   while (true) {
     try {
       const repoMap = await subscriber.hGetAll("repo_map");
@@ -75,22 +78,22 @@ async function poll() {
           
           if (!latestCommit) {
             console.warn(`Could not fetch latest commit for ${repoUrl}`);
-            // Add delay between requests to avoid rate limiting
             await sleep(2000);
             continue;
           }
           
           if (lastCommit !== latestCommit) {
             console.log(`Change detected for ${repoUrl}: ${lastCommit} -> ${latestCommit}`);
-            await triggerDeploy(repoUrl);         
+            
+            await publisher.hSet("last_commit", repoUrl, latestCommit);
+            
+            await triggerDeploy(repoUrl, deploymentId);
             console.log(`Redeploy triggered for ${repoUrl}`);
           }
           
-          // Add delay between requests to be respectful of GitHub's API
           await sleep(1000);
         } catch (error) {
           console.error(`Error processing repository ${repoUrl}:`, error);
-          // Continue with next repository even if one fails
         }
       }
     } catch (err) {
@@ -102,5 +105,11 @@ async function poll() {
   }
 }
 
+process.on('SIGINT', async () => {
+  console.log('Shutting down CI/CD Service...');
+  await publisher.quit();
+  await subscriber.quit();
+  process.exit(0);
+});
 
-poll(); 
+poll().catch(console.error); 
