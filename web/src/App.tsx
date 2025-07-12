@@ -211,7 +211,7 @@ export default function App() {
             <Rocket className="h-8 w-8 text-blue-600 mr-2" />
             <h1 className="text-4xl font-bold text-gray-900">SkyDeploy</h1>
           </div>
-          <p className="text-red-600 text-lg">Backend is under maintanace However previous generated site will still be live(Dated : 12 july 4:16 AM)</p>
+          <p className="text-gray-600 text-lg">Deploy your projects to the cloud in seconds</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -224,7 +224,7 @@ export default function App() {
                   Template Repo
                 </CardTitle>
                 <CardDescription>
-                  Use this template to get started quickly
+                  Use this template to get to test the service
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -299,18 +299,8 @@ export default function App() {
                 <ScrollArea className="h-64">
                   {deployments.length === 0 ? (
                     <div className="text-gray-500 text-center py-4 space-y-2">
-                      <div>No deployments yet</div>
-                      <div className="space-y-1">
-                        <div>
-                          <a
-                            href="https://github.com/Priyanshu-sde/disco-test.git"
-                            className="text-blue-600 hover:underline break-all"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            https://github.com/Priyanshu-sde/disco-test.git
-                          </a>
-                        </div>
+                      <div>No deployments yet. Below is a example deployed</div>
+                      <div className="space-y-1">                        
                         <div>
                           <a
                             href="https://dflds.skydeploy.priyanshu.online"
@@ -377,13 +367,12 @@ export default function App() {
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="overview">Overview</TabsTrigger>
-                      <TabsTrigger value="logs">Logs</TabsTrigger>
                       <TabsTrigger value="settings">Settings</TabsTrigger>
                     </TabsList>
                     
-                    <TabsContent value="overview" className="space-y-4">
+                    <TabsContent value="overview" className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Status</Label>
@@ -437,9 +426,7 @@ export default function App() {
                           </div>
                         </div>
                       )}
-                    </TabsContent>
-                    
-                    <TabsContent value="logs">
+
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <Label>Deployment Logs</Label>
@@ -459,7 +446,7 @@ export default function App() {
                         
                         <Card>
                           <CardContent className="p-0">
-                            <ScrollArea className="h-96">
+                            <ScrollArea className="h-64">
                               <div className="p-4 bg-gray-900 text-green-400 font-mono text-sm">
                                 {logs.length === 0 ? (
                                   <div className="text-gray-500">No logs available</div>
