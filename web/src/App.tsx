@@ -31,7 +31,7 @@ const statusColors = {
 };
 
 const statusIcons = {
-  'Uploaded': Clock,
+  'uploaded': Clock,
   'building': RefreshCw,
   'deployed': CheckCircle,
   'failed': AlertCircle,
