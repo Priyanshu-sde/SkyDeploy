@@ -11,8 +11,11 @@ compatibility_date = "2024-09-23"
 binding = "BUCKET"
 bucket_name = "skydeploy"
 
-# Serve every subdomain of your apex. Requires the zone to be on Cloudflare
-# and a wildcard DNS record:  *.skydeploy  CNAME  skydeploy.priyanshusde.me (proxied)
+# Serve every subdomain. The route only fires if the hostname is PROXIED, so
+# add a proxied wildcard DNS record in the Cloudflare dashboard (DNS → Records):
+#   Type: A   Name: *.skydeploy   IPv4: 192.0.2.1   Proxy: ON (orange cloud)
+# 192.0.2.1 is a throwaway address — the Worker intercepts the request before
+# the "origin" is ever contacted. `wrangler deploy` then attaches this route.
 [[routes]]
 pattern = "*.skydeploy.priyanshusde.me/*"
 zone_name = "priyanshusde.me"

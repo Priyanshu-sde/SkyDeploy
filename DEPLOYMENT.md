@@ -57,10 +57,12 @@ npx wrangler login
 npx wrangler deploy
 ```
 
-Then add a **wildcard DNS record** in Cloudflare: `*.skydeploy` →
-`CNAME` → `skydeploy.priyanshusde.me` (proxied/orange-cloud). The route in
-`wrangler.toml` (`*.skydeploy.priyanshusde.me/*`) sends those hits to the Worker,
-which reads `build/<id>/...` from R2.
+Then add a **proxied wildcard DNS record** in Cloudflare (DNS → Records):
+`Type: A`, `Name: *.skydeploy`, `IPv4: 192.0.2.1`, **Proxy: ON (orange cloud)**.
+The IP is a throwaway — the route in `wrangler.toml`
+(`*.skydeploy.priyanshusde.me/*`) intercepts the request and the Worker reads
+`build/<id>/...` from R2 before any "origin" is contacted. (A route only fires
+on a *proxied* hostname, which is why the dummy proxied record is required.)
 
 ## 3. api-worker (the deploy API)
 
@@ -74,10 +76,10 @@ npx wrangler secret put UPSTASH_REDIS_REST_URL
 npx wrangler secret put UPSTASH_REDIS_REST_TOKEN
 ```
 
-Edit `api-worker/wrangler.toml` `[vars]` if your `GITHUB_REPO` or `SITE_APEX`
-differ. Add DNS: `api-skydeploy` → CNAME → `priyanshusde.me` (proxied) so the
-route `api-skydeploy.priyanshusde.me/*` resolves. This matches `API_BASE` in
-[web/src/App.tsx](web/src/App.tsx).
+No DNS step needed here: `wrangler.toml` uses `custom_domain = true`, so
+`wrangler deploy` auto-creates the `api-skydeploy.priyanshusde.me` record and
+route. This matches `API_BASE` in [web/src/App.tsx](web/src/App.tsx). Edit the
+`[vars]` block if your `GITHUB_REPO` or `SITE_APEX` differ.
 
 ## 4. Frontend (Cloudflare Pages)
 
