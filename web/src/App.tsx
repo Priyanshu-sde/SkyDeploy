@@ -165,6 +165,7 @@ export default function App() {
   const [logs, setLogs] = useState<string[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const logsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     try {
@@ -234,9 +235,9 @@ export default function App() {
             prev.map((dep) => (dep.id === deploymentId ? { ...dep, status: data.status } : dep))
           );
 
-          if (selectedDeployment?.id === deploymentId) {
-            setSelectedDeployment((prev) => (prev ? { ...prev, status: data.status } : null));
-          }
+          setSelectedDeployment((prev) =>
+            prev && prev.id === deploymentId ? { ...prev, status: data.status } : prev
+          );
 
           if (data.status === 'deployed' || data.status === 'failed') {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -248,8 +249,8 @@ export default function App() {
     }, 2000);
   };
 
-  const fetchLogs = async (deploymentId: string) => {
-    setLoadingLogs(true);
+  const fetchLogs = async (deploymentId: string, silent = false) => {
+    if (!silent) setLoadingLogs(true);
     try {
       const response = await fetch(`${API_BASE}/logs?id=${deploymentId}`);
       if (response.ok) {
@@ -259,23 +260,37 @@ export default function App() {
     } catch (err) {
       console.error('Failed to fetch logs:', err);
     } finally {
-      setLoadingLogs(false);
+      if (!silent) setLoadingLogs(false);
     }
   };
 
+  const isActiveStatus = (status: string) =>
+    status === 'pending' || status === 'uploaded' || status === 'building';
+
+  // Poll status + logs while the selected deployment is still building.
   useEffect(() => {
-    if (selectedDeployment) {
-      fetchLogs(selectedDeployment.id);
-      if (selectedDeployment.status === 'building' || selectedDeployment.status === 'pending') {
-        startStatusPolling(selectedDeployment.id);
-      }
-    }
+    const dep = selectedDeployment;
+    if (!dep) return;
+
+    fetchLogs(dep.id);
+
+    if (!isActiveStatus(dep.status)) return;
+
+    startStatusPolling(dep.id);
+
+    if (logsIntervalRef.current) clearInterval(logsIntervalRef.current);
+    logsIntervalRef.current = setInterval(() => fetchLogs(dep.id, true), 2000);
+
+    return () => {
+      if (logsIntervalRef.current) clearInterval(logsIntervalRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDeployment?.id]);
+  }, [selectedDeployment?.id, selectedDeployment?.status]);
 
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (logsIntervalRef.current) clearInterval(logsIntervalRef.current);
     };
   }, []);
 
@@ -306,10 +321,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="hidden items-center gap-1.5 rounded-full border border-amber-400/20 bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-300 sm:inline-flex">
-              <span className="dot dot-pulse bg-amber-400" />
-              Backend paused
-            </span>
             <Button asChild variant="outline" size="sm">
               <a
                 href="https://github.com/Priyanshu-sde"
@@ -356,22 +367,6 @@ export default function App() {
             </span>
           </div>
         </section>
-
-        {/* Backend notice */}
-        <Alert className="mb-8 border-amber-400/20 bg-amber-400/[0.06] text-amber-200">
-          <AlertCircle className="h-4 w-4 !text-amber-400" />
-          <AlertDescription className="text-amber-200/90">
-            The build backend is currently paused — the EC2 instance is in use by another project.
-            Recruiters: email{' '}
-            <a
-              href="mailto:priyanshu.sde@gmail.com"
-              className="font-medium text-amber-100 underline underline-offset-4 hover:text-white"
-            >
-              priyanshu.sde@gmail.com
-            </a>{' '}
-            and I'll switch it back on. A live example is linked below.
-          </AlertDescription>
-        </Alert>
 
         {/* ── Workspace ────────────────────────────────────────── */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -460,17 +455,8 @@ export default function App() {
                     </div>
                     <p className="text-sm font-medium">No deployments yet</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Deploy a repo to see it here. Live example:
+                      Deploy a repo to see it appear here.
                     </p>
-                    <a
-                      href="https://dflds.priyanshusde.me"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-foreground underline underline-offset-4 hover:text-muted-foreground"
-                    >
-                      <Globe className="h-3.5 w-3.5" />
-                      dflds.priyanshusde.me
-                    </a>
                   </div>
                 ) : (
                   <div className="space-y-1.5">
@@ -546,30 +532,19 @@ export default function App() {
                     </TabsList>
 
                     <TabsContent value="overview" className="mt-5 space-y-5">
-                      {/* Meta grid */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="rounded-lg border border-border bg-secondary/30 p-3">
-                          <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                            Status
-                          </div>
-                          <div
-                            className={cn(
-                              'mt-1.5 flex items-center gap-2 text-sm font-medium',
-                              metaFor(selectedDeployment.status).text
-                            )}
-                          >
-                            <StatusDot status={selectedDeployment.status} />
-                            {metaFor(selectedDeployment.status).label}
-                          </div>
+                      {/* Status */}
+                      <div className="rounded-lg border border-border bg-secondary/30 p-3">
+                        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                          Status
                         </div>
-                        <div className="rounded-lg border border-border bg-secondary/30 p-3">
-                          <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                            Framework
-                          </div>
-                          <div className="mt-1.5 flex items-center gap-2 text-sm font-medium">
-                            <Boxes className="h-4 w-4 text-muted-foreground" />
-                            {selectedDeployment.projectType || 'Detecting…'}
-                          </div>
+                        <div
+                          className={cn(
+                            'mt-1.5 flex items-center gap-2 text-sm font-medium',
+                            metaFor(selectedDeployment.status).text
+                          )}
+                        >
+                          <StatusDot status={selectedDeployment.status} />
+                          {metaFor(selectedDeployment.status).label}
                         </div>
                       </div>
 
