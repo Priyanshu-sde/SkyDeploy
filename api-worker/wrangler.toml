@@ -18,8 +18,8 @@ custom_domain = true
 [vars]
 # owner/repo that holds the deploy.yml workflow (this repo).
 GITHUB_REPO = "Priyanshu-sde/SkyDeploy"
-# Apex used to build the returned site URL.
-SITE_APEX = "skydeploy.priyanshusde.me"
+# Apex used to build the returned site URL -> https://<id>.priyanshusde.me
+SITE_APEX = "priyanshusde.me"
 
 # Secrets (set with `npx wrangler secret put <NAME>`), NOT committed:
 #   GITHUB_TOKEN              fine-grained PAT with "Contents: read & write"  -> actually only needs
