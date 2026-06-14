@@ -20,7 +20,7 @@ import {
   Eye
 } from 'lucide-react';
 
-const API_BASE = 'https://api-skydeploy.priyanshu.online';
+const API_BASE = 'https://api-skydeploy.priyanshusde.me';
 
 const statusColors = {
   'Uploaded': 'bg-blue-100 text-blue-800',
@@ -111,7 +111,7 @@ export default function App() {
         repoUrl: sanitizedRepoUrl,
         status: 'pending',
         timestamp: new Date().toISOString(),
-        url: `https://${data.id}.skydeploy.priyanshu.online`
+        url: `https://${data.id}.skydeploy.priyanshusde.me`
       };
 
       setDeployments(prev => [newDeployment, ...prev]);
@@ -303,12 +303,12 @@ export default function App() {
                       <div className="space-y-1">                        
                         <div>
                           <a
-                            href="https://dflds.skydeploy.priyanshu.online"
+                            href="https://dflds.skydeploy.priyanshusde.me"
                             className="text-blue-600 hover:underline break-all"
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            https://dflds.skydeploy.priyanshu.online
+                            https://dflds.skydeploy.priyanshusde.me
                           </a>
                         </div>
                       </div>

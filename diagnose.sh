@@ -40,7 +40,7 @@ pm2 list
 
 echo ""
 echo "6. Testing nginx proxy..."
-curl -s https://api-skydeploy.priyanshu.online/health || echo "❌ Nginx proxy test failed"
+curl -s https://api-skydeploy.priyanshusde.me/health || echo "❌ Nginx proxy test failed"
 
 echo ""
 echo "=== Diagnostics Complete ===" 

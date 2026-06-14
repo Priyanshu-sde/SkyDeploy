@@ -216,7 +216,7 @@ SkyDeploy is a modern deployment platform that automatically detects and deploys
 - **Port**: 3002
 - **Responsibilities**:
   - Serve deployed applications
-  - Handle subdomain routing (`{id}.skydeploy.priyanshu.online`)
+  - Handle subdomain routing (`{id}.skydeploy.priyanshusde.me`)
   - MIME type detection and proper headers
   - SPA fallback support
   - Static asset caching
@@ -359,7 +359,7 @@ User Request → Cloudflare DNS → Cloudflare CDN → Nginx → Request Handler
 
 #### 3. Cloudflare DNS
 - **Purpose**: DNS management and subdomain routing
-- **Pattern**: `{deployment-id}.skydeploy.priyanshu.online`
+- **Pattern**: `{deployment-id}.skydeploy.priyanshusde.me`
 - **Features**: Health checks, SSL certificates, DDoS protection
 
 ### External Services

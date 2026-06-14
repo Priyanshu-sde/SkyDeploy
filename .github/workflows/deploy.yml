@@ -1,0 +1,52 @@
+name: Deploy site
+
+# Fired by the API Worker via repository_dispatch (event_type "deploy"),
+# or manually from the Actions tab. This is the on-demand "build VM" that
+# replaces the always-on Deploy-service. Free: ~2000 min/mo (unlimited on
+# public repos).
+on:
+  repository_dispatch:
+    types: [deploy]
+  workflow_dispatch:
+    inputs:
+      repoUrl:
+        description: "Git repo URL to deploy"
+        required: true
+      id:
+        description: "Deployment id (subdomain). Leave blank to auto-generate."
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SkyDeploy (for the build script)
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Resolve inputs
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "repoUrl=${{ github.event.client_payload.repoUrl }}" >> "$GITHUB_OUTPUT"
+            echo "id=${{ github.event.client_payload.id }}" >> "$GITHUB_OUTPUT"
+          else
+            ID="${{ github.event.inputs.id }}"
+            [ -z "$ID" ] && ID=$(head -c4 /dev/urandom | od -An -tx1 | tr -d ' \n')
+            echo "repoUrl=${{ github.event.inputs.repoUrl }}" >> "$GITHUB_OUTPUT"
+            echo "id=$ID" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and deploy to R2
+        env:
+          REPO_URL: ${{ steps.vars.outputs.repoUrl }}
+          DEPLOY_ID: ${{ steps.vars.outputs.id }}
+          ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+        run: bash ci/build-and-deploy.sh

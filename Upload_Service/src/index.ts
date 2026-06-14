@@ -117,7 +117,7 @@ app.post("/deploy", async (req, res) => {
   res.json({
     id: id,
     projectType: projectType,
-    url: `https://${id}.skydeploy.priyanshu.online`,
+    url: `https://${id}.skydeploy.priyanshusde.me`,
     message: "New deployment triggered"
   });
   } catch (error) {

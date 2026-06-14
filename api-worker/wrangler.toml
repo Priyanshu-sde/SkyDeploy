@@ -1,0 +1,26 @@
+# Cloudflare Worker exposing the deploy API the frontend already calls.
+# Replaces Upload_Service's HTTP endpoints. Instead of cloning repos itself,
+# /deploy fires a GitHub repository_dispatch so a (free, on-demand) GitHub
+# Actions runner does the clone + build + upload. $0, no VM.
+#
+# Deploy:  cd api-worker && npx wrangler deploy
+# Route it at api-skydeploy.priyanshusde.me (matches API_BASE in web/src/App.tsx).
+name = "skydeploy-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+
+[[routes]]
+pattern = "api-skydeploy.priyanshusde.me/*"
+zone_name = "priyanshusde.me"
+
+[vars]
+# owner/repo that holds the deploy.yml workflow (this repo).
+GITHUB_REPO = "PriyanshuChaurasia/SkyDeploy"
+# Apex used to build the returned site URL.
+SITE_APEX = "skydeploy.priyanshusde.me"
+
+# Secrets (set with `npx wrangler secret put <NAME>`), NOT committed:
+#   GITHUB_TOKEN              fine-grained PAT with "Contents: read & write"  -> actually only needs
+#                            repo "Actions" dispatch; classic PAT with `repo` scope works.
+#   UPSTASH_REDIS_REST_URL   from the Upstash console
+#   UPSTASH_REDIS_REST_TOKEN from the Upstash console
