@@ -58,11 +58,18 @@ npx wrangler deploy
 ```
 
 Then add a **proxied wildcard DNS record** in Cloudflare (DNS → Records):
-`Type: A`, `Name: *.skydeploy`, `IPv4: 192.0.2.1`, **Proxy: ON (orange cloud)**.
+`Type: A`, `Name: *`, `IPv4: 192.0.2.1`, **Proxy: ON (orange cloud)**.
 The IP is a throwaway — the route in `wrangler.toml`
-(`*.skydeploy.priyanshusde.me/*`) intercepts the request and the Worker reads
+(`*.priyanshusde.me/*`) intercepts the request and the Worker reads
 `build/<id>/...` from R2 before any "origin" is contacted. (A route only fires
 on a *proxied* hostname, which is why the dummy proxied record is required.)
+
+Sites are served at **`<id>.priyanshusde.me`** (a first-level subdomain). This
+is deliberate: Cloudflare's free Universal SSL covers `*.priyanshusde.me` and
+the apex, but **not** a 2-level wildcard like `*.skydeploy.priyanshusde.me`
+(that needs paid Advanced Certificate Manager). Your explicit records
+(`api-skydeploy`, `www`, apex) take precedence over the `*` wildcard, so they're
+unaffected.
 
 ## 3. api-worker (the deploy API)
 
@@ -99,7 +106,7 @@ No code change needed — it already calls `https://api-skydeploy.priyanshusde.m
 2. api-worker returns an `id` and triggers the Actions run.
 3. The dashboard polls `/status` and `/logs` (served from Upstash) — watch it go
    `queued → building → deployed`.
-4. Visit `https://<id>.skydeploy.priyanshusde.me`.
+4. Visit `https://<id>.priyanshusde.me`.
 
 ## Notes / limits (free tiers)
 

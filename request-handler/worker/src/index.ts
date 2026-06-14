@@ -1,6 +1,6 @@
 // Serves deployed sites from R2 by subdomain.
 //
-// A request to https://<id>.skydeploy.priyanshusde.me/<path> returns the
+// A request to https://<id>.priyanshusde.me/<path> returns the
 // object at R2 key `build/<id>/<path>`, falling back to the site's index.html
 // (SPA routing). This is a 1:1 port of the original Express request-handler,
 // but as a serverless Worker reading R2 directly via a binding (zero egress,
@@ -60,6 +60,13 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const id = url.hostname.split(".")[0];
+
+    // The route is the broad *.priyanshusde.me/*, so ignore non-deploy hosts
+    // (these have their own records but we guard in case they're ever proxied).
+    const reserved = new Set(["www", "api-skydeploy", "skydeploy"]);
+    if (reserved.has(id)) {
+      return new Response("Not found", { status: 404 });
+    }
 
     let filePath = url.pathname;
     if (filePath === "/" || filePath === "") {

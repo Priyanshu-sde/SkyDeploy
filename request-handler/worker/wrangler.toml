@@ -11,11 +11,16 @@ compatibility_date = "2024-09-23"
 binding = "BUCKET"
 bucket_name = "skydeploy"
 
-# Serve every subdomain. The route only fires if the hostname is PROXIED, so
-# add a proxied wildcard DNS record in the Cloudflare dashboard (DNS → Records):
-#   Type: A   Name: *.skydeploy   IPv4: 192.0.2.1   Proxy: ON (orange cloud)
-# 192.0.2.1 is a throwaway address — the Worker intercepts the request before
-# the "origin" is ever contacted. `wrangler deploy` then attaches this route.
+# Sites are served at <id>.priyanshusde.me — a FIRST-level subdomain, which the
+# free Cloudflare Universal SSL cert covers (a 2-level wildcard like
+# *.skydeploy.priyanshusde.me would need paid Advanced Certificate Manager).
+#
+# The route only fires on a PROXIED hostname, so add a proxied wildcard record
+# in the Cloudflare dashboard (DNS → Records):
+#   Type: A   Name: *   IPv4: 192.0.2.1   Proxy: ON (orange cloud)
+# 192.0.2.1 is a throwaway — the Worker intercepts before any "origin" is hit.
+# Explicit records (api-skydeploy, www, apex) win over the wildcard, so they're
+# unaffected. `wrangler deploy` then attaches this route.
 [[routes]]
-pattern = "*.skydeploy.priyanshusde.me/*"
+pattern = "*.priyanshusde.me/*"
 zone_name = "priyanshusde.me"

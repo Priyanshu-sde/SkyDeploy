@@ -111,7 +111,7 @@ export default function App() {
         repoUrl: sanitizedRepoUrl,
         status: 'pending',
         timestamp: new Date().toISOString(),
-        url: `https://${data.id}.skydeploy.priyanshusde.me`
+        url: data.url || `https://${data.id}.priyanshusde.me`
       };
 
       setDeployments(prev => [newDeployment, ...prev]);
@@ -303,12 +303,12 @@ export default function App() {
                       <div className="space-y-1">                        
                         <div>
                           <a
-                            href="https://dflds.skydeploy.priyanshusde.me"
+                            href="https://dflds.priyanshusde.me"
                             className="text-blue-600 hover:underline break-all"
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            https://dflds.skydeploy.priyanshusde.me
+                            https://dflds.priyanshusde.me
                           </a>
                         </div>
                       </div>
